@@ -30,6 +30,10 @@ import { Input } from "@/components/ui/input";
 
 const ARC_CHAIN_ID = arcTestnet.id;
 
+const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
+  ? process.env.NEXT_PUBLIC_VERCEL_URL
+  : "http://localhost:3000";
+
 // Simple transaction format from API
 interface SimpleTransaction {
   hash: string;
@@ -182,9 +186,7 @@ async function syncTransactions(
   }
 }
 
-const baseUrl = process.env.NEXT_PUBLIC_VERCEL_URL
-  ? process.env.NEXT_PUBLIC_VERCEL_URL
-  : "http://localhost:3000";
+
 
 const supabase = createSupabaseBrowserClient();
 
@@ -380,31 +382,38 @@ export const Transactions: FunctionComponent<Props> = (props) => {
                 return (
                   <div
                     key={transaction.id}
-                    className="p-4 pl-0 hover:bg-gray-50 dark:hover:bg-white/5"
+                    className="p-4 mb-3 glass-card hover:bg-white/10 hover:shadow-xl transition-all duration-300 cursor-pointer border-white/5"
                     onClick={() => router.push(
                       `/dashboard/transaction/${transaction.circle_transaction_id}`
                     )}
                   >
-                    <div className="flex items-start gap-2">
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-full ${transaction.transaction_type === 'USDC_TRANSFER_IN' || transaction.transaction_type === 'received' ? 'bg-green-500/20 text-green-400' : 'bg-white/10 text-white/70'}`}>
+                        {(transaction.transaction_type === 'USDC_TRANSFER_IN' || transaction.transaction_type === 'received') ? (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+                        ) : (
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></svg>
+                        )}
+                      </div>
                       <div className="flex-1">
                         <div className="flex items-center">
-                          <span className="font-medium">
+                          <span className="font-semibold text-white/90">
                             {transaction.circle_transaction_id ?
                               `${transaction.circle_transaction_id.slice(0, 6)}...${transaction.circle_transaction_id.slice(-4)}` :
                               'Unknown address'}
                           </span>
-                          <Badge className={`ml-2 ${statusClass}`}>
+                          <Badge className={`ml-3 rounded-full px-2.5 font-semibold text-[10px] uppercase tracking-wider ${statusClass}`}>
                             {transaction.status}
                           </Badge>
                         </div>
-                        <div className="text-sm text-muted-foreground mt-1">
+                        <div className="text-sm font-medium text-white/60 mt-0.5">
                           {getTransactionTypeDisplay(transaction.transaction_type)}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-xs text-white/40 mt-1 font-medium">
                           {transaction.formattedDate}
                         </div>
                       </div>
-                      <div className="ml-auto font-medium">
+                      <div className={`text-lg font-bold ${transaction.transaction_type === 'USDC_TRANSFER_IN' || transaction.transaction_type === 'received' ? 'text-green-400' : 'text-white'}`}>
                         {(transaction.transaction_type === 'USDC_TRANSFER_IN' ||
                           transaction.transaction_type === 'received') ? '+' : '-'}
                         {parseFloat(transaction.amount).toFixed(2)}

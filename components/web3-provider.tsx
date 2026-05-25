@@ -289,48 +289,6 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
 
-        // Fetch balances using viem client
-        const fetchBalances = async (accountData: Account) => {
-            const newBalance = { ...initialBalance };
-
-            if (accountData.address && accountData.publicClient) {
-                try {
-                    // Native token balance (USDC as gas on Arc)
-                    const nativeBalance = await accountData.publicClient.getBalance({
-                        address: accountData.address
-                    });
-
-                    newBalance.native = (Number(nativeBalance) / 1e18).toString();
-
-                    // USDC ERC-20 balance
-                    try {
-                        const result = await accountData.publicClient.readContract({
-                            address: USDC_ADDRESS,
-                            abi: [{
-                                name: 'balanceOf',
-                                type: 'function',
-                                stateMutability: 'view',
-                                inputs: [{ name: 'account', type: 'address' }],
-                                outputs: [{ name: '', type: 'uint256' }],
-                            }],
-                            functionName: 'balanceOf',
-                            args: [accountData.address]
-                        });
-
-                        const divisor = 10 ** USDC_DECIMALS;
-                        newBalance.usdc = (Number(result) / divisor).toString();
-                    } catch (error) {
-                        console.error('Error fetching USDC balance:', error);
-                        newBalance.usdc = balance.usdc;
-                    }
-                } catch (error) {
-                    console.error('Error fetching balances:', error);
-                }
-            }
-
-            setBalance(newBalance);
-        };
-
         // Register a new passkey
         const registerPasskey = async (username: string) => {
             try {
@@ -349,7 +307,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
                 await initializeWeb3(newCredential);
 
                 // Save the credential to the database via API
-                const response = await fetch(`${baseUrl}/api/update-passkey`, {
+                const response = await fetch(`${baseUrl}/api/update-login-credential`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -411,16 +369,10 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
 
-        // Refresh balances
-        const refreshBalances = async () => {
-            await fetchBalances(account);
-        };
-
         // Set context methods
         setContextMethods({
             registerPasskey,
-            loginWithPasskey,
-            refreshBalances
+            loginWithPasskey
         });
 
         // Async initialization function
@@ -449,18 +401,62 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
     const [contextMethods, setContextMethods] = useState<{
         registerPasskey: (username: string) => Promise<any>;
         loginWithPasskey: () => Promise<any>;
-        refreshBalances: () => Promise<void>;
     }>({
         registerPasskey: async () => {
             throw new Error('Not initialized yet');
         },
         loginWithPasskey: async () => {
             throw new Error('Not initialized yet');
-        },
-        refreshBalances: async () => {
-            throw new Error('Not initialized yet');
         }
     });
+
+    // Fetch balances using viem client
+    const fetchBalances = async (accountData: Account) => {
+        const newBalance = { ...initialBalance };
+
+        if (accountData.address && accountData.publicClient) {
+            try {
+                // Native token balance (USDC as gas on Arc)
+                const nativeBalance = await accountData.publicClient.getBalance({
+                    address: accountData.address
+                });
+
+                newBalance.native = (Number(nativeBalance) / 1e18).toString();
+
+                // USDC ERC-20 balance
+                try {
+                    const result = await accountData.publicClient.readContract({
+                        address: USDC_ADDRESS,
+                        abi: [{
+                            name: 'balanceOf',
+                            type: 'function',
+                            stateMutability: 'view',
+                            inputs: [{ name: 'account', type: 'address' }],
+                            outputs: [{ name: '', type: 'uint256' }],
+                        }],
+                        functionName: 'balanceOf',
+                        args: [accountData.address]
+                    });
+
+                    const divisor = 10 ** USDC_DECIMALS;
+                    newBalance.usdc = (Number(result) / divisor).toString();
+                } catch (error) {
+                    console.error('Error fetching USDC balance:', error);
+                    newBalance.usdc = balance.usdc;
+                }
+            } catch (error) {
+                console.error('Error fetching balances:', error);
+            }
+        }
+
+        setBalance(newBalance);
+    };
+
+    // Refresh balances
+    const refreshBalances = async () => {
+        if (!account.address) return;
+        await fetchBalances(account);
+    };
 
     // Get address
     const getAddress = async (): Promise<string | null> => {
@@ -499,7 +495,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
             });
 
             // Refresh balances after successful transaction
-            contextMethods.refreshBalances().catch(err => {
+            refreshBalances().catch(err => {
                 console.error('Failed to refresh balances after transaction:', err);
             });
 
@@ -540,7 +536,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
             });
 
             // Refresh balances after successful transaction
-            contextMethods.refreshBalances().catch(err => {
+            refreshBalances().catch(err => {
                 console.error('Failed to refresh balances after USDC transfer:', err);
             });
 
@@ -605,7 +601,7 @@ export const Web3Provider: React.FC<{ children: React.ReactNode }> = ({ children
         sendUSDC,
         getUSDCBalance,
         balance,
-        refreshBalances: contextMethods.refreshBalances,
+        refreshBalances,
         signMessage,
         signTypedData,
         getAddress,

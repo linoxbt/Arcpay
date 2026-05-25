@@ -52,8 +52,8 @@ export function WalletBalance() {
   return (
     <>
       <div className="w-full">
-        <div className="mt-4">
-          <div className="text-3xl font-bold">
+        <div className="mt-2">
+          <div className="text-5xl font-extrabold tracking-tighter premium-gradient-text drop-shadow-sm">
             {formatBalance(balance.token, balance.loading)}
           </div>
         </div>
@@ -62,7 +62,7 @@ export function WalletBalance() {
       <button
         onClick={handleRefreshBalances}
         disabled={isRefreshing}
-        className={`text-sm ${isRefreshing ? 'text-gray-400' : 'text-blue-500 hover:text-blue-700'} flex items-center gap-1`}
+        className={`text-sm mt-2 ${isRefreshing ? 'text-white/40' : 'text-white/60 hover:text-white'} flex items-center gap-1.5 transition-colors font-medium`}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -71,7 +71,7 @@ export function WalletBalance() {
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="2.5"
           strokeLinecap="round"
           strokeLinejoin="round"
           className={isRefreshing ? 'animate-spin' : ''}
@@ -83,8 +83,9 @@ export function WalletBalance() {
         </svg>
         {isRefreshing ? 'Refreshing...' : 'Refresh Balance'}
       </button>
+      
       <Button
-        className="flex-1 py-3 text-lg font-semibold rounded-full"
+        className="flex-1 py-6 text-lg font-bold rounded-xl mt-4 premium-gradient-bg border-none shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-all duration-300"
         asChild
       >
         <a href={CIRCLE_FAUCET_URL} target="_blank" rel="noopener noreferrer">

@@ -137,31 +137,36 @@ export default function WalletTab() {
           onChange={setRecipient}
           required
         />
-        <div className="flex flex-1 items-center justify-center">
+        <div className="flex flex-1 items-center justify-center relative">
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-500/5 to-transparent pointer-events-none" />
           <p
-            className="font-bold"
+            className="font-black tracking-tighter premium-gradient-text drop-shadow-md transition-all duration-200"
             style={{ fontSize: calculateFontSize(amount) }}
           >
             ${amount}
           </p>
         </div>
-        <VirtualKeyboard value={amount} onChangeText={setAmount} />
-        <Button
-          disabled={
-            amount === "0" || amount.endsWith(".") || isLoading || !isValidRecipient
-          }
-          className="py-7 text-lg font-semibold rounded-full w-full mt-4 disabled:bg-muted disabled:text-muted-foreground"
-          onClick={handlePayButtonClick}
-        >
-          {isLoading ? (
-            <>
-              <RotateCw className="mr-2 h-4 w-4 animate-spin" />
-              Sending...
-            </>
-          ) : (
-            "Pay"
-          )}
-        </Button>
+        <div className="px-4 pb-2">
+          <VirtualKeyboard value={amount} onChangeText={setAmount} />
+        </div>
+        <div className="px-4 pb-6">
+          <Button
+            disabled={
+              amount === "0" || amount.endsWith(".") || isLoading || !isValidRecipient
+            }
+            className="py-7 text-lg font-bold rounded-2xl w-full mt-2 disabled:bg-white/5 disabled:text-white/30 premium-gradient-bg border-none shadow-[0_0_20px_rgba(139,92,246,0.3)] hover:shadow-[0_0_30px_rgba(139,92,246,0.5)] transition-all duration-300"
+            onClick={handlePayButtonClick}
+          >
+            {isLoading ? (
+              <>
+                <RotateCw className="mr-2 h-5 w-5 animate-spin" />
+                Sending...
+              </>
+            ) : (
+              "Send USDC"
+            )}
+          </Button>
+        </div>
       </div>
     </>
   );

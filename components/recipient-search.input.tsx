@@ -347,12 +347,12 @@ export function RecipientSearchInput({
       ) : (
         <Button
           variant="outline"
-          className="w-full justify-start gap-2 h-auto py-3 px-3 font-normal text-muted-foreground"
+          className="w-full justify-start gap-3 h-auto py-4 px-4 font-normal text-white/50 glass-card border-white/10 hover:bg-white/5 hover:text-white/80 transition-all shadow-[0_4px_20px_rgba(0,0,0,0.15)]"
           onClick={handleOpen}
           type="button"
         >
-          <Search className="h-4 w-4 shrink-0" />
-          Search by name, email, or address
+          <Search className="h-5 w-5 shrink-0" />
+          <span className="text-base">Search by name, email, or address</span>
         </Button>
       )}
 
@@ -360,10 +360,10 @@ export function RecipientSearchInput({
       {mounted && (
         <div
           className={cn(
-            'absolute inset-0 z-50 bg-background flex flex-col transition-all duration-200 ease-out',
+            'absolute inset-0 z-50 bg-background/95 backdrop-blur-3xl flex flex-col transition-all duration-300 ease-out',
             visible
               ? 'opacity-100 translate-y-0'
-              : 'opacity-0 translate-y-4'
+              : 'opacity-0 translate-y-8'
           )}
         >
           <Command

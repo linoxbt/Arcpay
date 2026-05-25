@@ -23,6 +23,7 @@ import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { Web3Provider } from "@/components/web3-provider";
 import { BalanceProvider } from "@/contexts/balanceContext";
+import { Providers } from "@/components/rainbow-provider";
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
@@ -45,27 +46,29 @@ export default async function RootLayout({
 }) {
   return (
     <html lang="en" className={GeistSans.className} suppressHydrationWarning>
-      <body className="bg-background/5 text-foreground flex items-center justify-center min-h-svh overflow-hidden">
-        <Web3Provider>
-          <BalanceProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="dark"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <Toaster expand />
-              {/* Phone simulation container */}
-              <div className="relative w-full max-w-[430px] h-screen max-h-[932px] flex flex-col bg-background shadow-xl overflow-hidden">
-                <main className="flex-1 flex flex-col items-center overflow-hidden">
-                  <div className="flex flex-col w-full flex-1">
-                    {children}
-                  </div>
-                </main>
-              </div>
-            </ThemeProvider>
-          </BalanceProvider>
-        </Web3Provider>
+      <body className="bg-background text-foreground flex items-center justify-center min-h-screen overflow-y-auto dark">
+        <Providers>
+          <Web3Provider>
+            <BalanceProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="dark"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <Toaster expand />
+                {/* Responsive web app container */}
+                <div className="relative w-full max-w-lg min-h-screen sm:min-h-[85vh] flex flex-col bg-background/80 backdrop-blur-xl shadow-2xl sm:rounded-3xl sm:border sm:border-white/10 premium-gradient-bg sm:my-8 transition-all">
+                  <main className="flex-1 flex flex-col items-center overflow-y-auto glass rounded-none sm:rounded-3xl">
+                    <div className="flex flex-col w-full flex-1 min-h-0">
+                      {children}
+                    </div>
+                  </main>
+                </div>
+              </ThemeProvider>
+            </BalanceProvider>
+          </Web3Provider>
+        </Providers>
       </body>
     </html>
   );

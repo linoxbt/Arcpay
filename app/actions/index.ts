@@ -30,29 +30,15 @@ export const signInAction = async (formData: FormData) => {
   const supabase = await createClient();
 
   if (isPasskeyLogin) {
-    // For passkey logins, we'll try to sign in with email and a predefined password
-    // This is not secure but works as a fallback
-    // The email should be verified by checking the passkey_credential in wallets
-
+    // BUG FIX #2: Removed hardcoded insecure default password.
+    // Passkey logins are handled fully on the client side via Circle Modular Wallets.
+    // The server-side sign-in action is only for email/password auth.
+    // Passkey login should use OTP as fallback, never a shared secret.
     try {
-      // First check if this is a legitimate passkey login by checking cookies
       const cookieStore = await cookies();
       const passkeyEmail = cookieStore.get("passkey_email")?.value;
 
       if (passkeyEmail && passkeyEmail === email) {
-        // This is a legitimate passkey login, so we can use a special flow
-        // Try a standard login first with a default password (this would be set in your initial user setup)
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password: "passkey-default-pw", // You would set this during user setup
-        });
-
-        if (!error) {
-          // Successfully logged in
-          return redirect("/dashboard");
-        }
-
-        // If that fails, use OTP
         const { error: otpError } = await supabase.auth.signInWithOtp({
           email,
           options: {
@@ -63,21 +49,20 @@ export const signInAction = async (formData: FormData) => {
         if (otpError) {
           return encodedRedirect(
             "error",
-            "/sign-up",
-            "Could not authenticate with passkey",
+            "/sign-in",
+            "Could not authenticate with passkey: " + otpError.message,
           );
         }
 
-        // Successfully initiated OTP login
         return encodedRedirect(
           "success",
-          "/sign-up",
+          "/sign-in",
           "Check your email for a login link",
         );
       }
     } catch (error) {
       console.error("Error in passkey login:", error);
-      return encodedRedirect("error", "/sign-up", "Authentication failed");
+      return encodedRedirect("error", "/sign-in", "Authentication failed");
     }
   }
 
@@ -92,6 +77,30 @@ export const signInAction = async (formData: FormData) => {
   }
 
   return redirect("/dashboard");
+};
+
+export const signUpAction = async (formData: FormData) => {
+  const email = formData.get("email") as string;
+  const password = formData.get("password") as string;
+  const supabase = await createClient();
+
+  if (!email || !password) {
+    return encodedRedirect("error", "/sign-in", "Email and password are required");
+  }
+
+  const { error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${(await headers()).get("origin")}/auth/callback`,
+    },
+  });
+
+  if (error) {
+    return encodedRedirect("error", "/sign-in", error.message);
+  }
+
+  return redirect("/onboarding");
 };
 
 export const forgotPasswordAction = async (formData: FormData) => {
@@ -134,8 +143,10 @@ export const resetPasswordAction = async (formData: FormData) => {
   const password = formData.get("password") as string;
   const confirmPassword = formData.get("confirmPassword") as string;
 
+  // BUG FIX #1: Added missing 'return' statements — without these, validation
+  // is completely bypassed and updateUser is called regardless of errors.
   if (!password || !confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Password and confirm password are required",
@@ -143,7 +154,7 @@ export const resetPasswordAction = async (formData: FormData) => {
   }
 
   if (password !== confirmPassword) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
       "Passwords do not match",
@@ -155,14 +166,14 @@ export const resetPasswordAction = async (formData: FormData) => {
   });
 
   if (error) {
-    encodedRedirect(
+    return encodedRedirect(
       "error",
       "/dashboard/reset-password",
-      "Password update failed",
+      "Password update failed: " + error.message,
     );
   }
 
-  encodedRedirect("success", "/dashboard/reset-password", "Password updated");
+  return encodedRedirect("success", "/dashboard/reset-password", "Password updated successfully");
 };
 
 export const signOutAction = async () => {

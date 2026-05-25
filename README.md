@@ -1,131 +1,108 @@
-# Arc Fintech Starter App
+# ⚡ ArcPay - Web3 P2P Payment Gateway & Wallet
 
-Modern peer-to-peer payment system. This sample application uses Next.js, Supabase, and Circle Modular Wallets with Passkey security to demonstrate a seamless, gasless P2P payment system on the Arc Network.
+ArcPay is a modern, high-fidelity Web3 peer-to-peer payment gateway and platform built for the **Arc Network**. By combining state-of-the-art **RainbowKit** connection, **Sign-In with Ethereum (SIWE)** backend authentication, and a secure **Supabase** backend, ArcPay offers a seamless, gasless transaction experience on the Arc Testnet.
 
-<img width="215" height="465" alt="Fintech Starter App dashboard" src="public/screenshot.png" />
+---
 
-## Table of Contents
+## ✨ Features
 
-- [Prerequisites](#prerequisites)
-- [Getting Started](#getting-started)
-- [How It Works](#how-it-works)
-- [Environment Variables](#environment-variables)
-- [User Accounts](#user-accounts)
+- **🌐 Web3-Native Connection:** Integrated with **RainbowKit** and **Wagmi** for a smooth, plug-and-play wallet connection experience.
+- **🔐 Secure SIWE Authentication:** Implements the **Sign-In with Ethereum (EIP-4361)** standard to verify ownership of wallet addresses on the backend and seamlessly establish authenticated Supabase sessions.
+- **🚀 Arc Testnet & Gasless Transactions:** Built specifically to leverage the **Arc Testnet (Chain ID: 5042002)**, offering supercharged transactions with USDC.
+- **💎 Premium Dark UI:** Crafted with a high-fidelity glassmorphism aesthetic, sleek micro-animations, customizable responsive sizing, and vibrant blue/purple glow effects.
+- **⚡ Real-time Synchronization:** Utilizes Supabase Realtime to push immediate updates for payments, invoice creation, and wallet balances.
+- **📜 Smart Contract Integration:** Interactive transaction mechanics utilizing Ethers/Viem to sign payloads directly from connected EOAs.
 
-## Prerequisites
+---
 
-- **Node.js v22+** — Install via [nvm](https://github.com/nvm-sh/nvm)
-- **Supabase CLI** — Install via `npm install -g supabase` or see [Supabase CLI docs](https://supabase.com/docs/guides/cli/getting-started)
-- **Docker Desktop** (only if using the local Supabase path) — [Install Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Circle **[API key](https://console.circle.com/signin)** and **[Entity Secret](https://developers.circle.com/wallets/dev-controlled/register-entity-secret)**
+## 🛠️ Technology Stack
 
-## Getting Started
+- **Framework:** [Next.js 15+ (App Router)](https://nextjs.org/)
+- **Wallet Connection:** [@rainbow-me/rainbowkit](https://www.rainbowkit.com/) & [Wagmi / Viem](https://wagmi.sh/)
+- **State Management:** [@tanstack/react-query](https://tanstack.com/query)
+- **Database & Auth:** [Supabase](https://supabase.com/)
+- **Theme & Styles:** [Tailwind CSS](https://tailwindcss.com/) & [shadcn/ui](https://ui.shadcn.com/)
+- **Icons & Alerts:** [Lucide React](https://lucide.dev/) & [Sonner](https://github.com/emilkowalski/sonner)
 
-1. Clone the repository and install dependencies:
+---
 
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+- **Node.js v20+**
+- **npm** or **bun**
+- A **WalletConnect Project ID** (Obtained from [WalletConnect Cloud](https://cloud.walletconnect.com/))
+- A **Supabase Project** (Local or Cloud instance)
+
+### ⚙️ Installation & Setup
+
+1. **Clone the repository:**
    ```bash
-   git clone git@github.com:akelani-circle/arc-p2p-payments.git
-   cd arc-p2p-payments
+   git clone git@github.com:linoxbt/memeautonom.git
+   cd memeautonom/arcpay
+   ```
+
+2. **Install dependencies:**
+   ```bash
    npm install
    ```
 
-2. Set up environment variables:
+3. **Configure Environment Variables:**
+   Create a `.env.local` file in the root of the `arcpay` directory:
+   ```env
+   # Supabase Credentials
+   NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
 
-   ```bash
-   cp .env.example .env.local
+   # Web3 Configuration
+   NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your-walletconnect-project-id
    ```
 
-   Then edit `.env.local` and fill in all required values (see [Environment Variables](#environment-variables) section below).
-
-3. Set up the database — Choose one of the two paths below:
-
-   <details>
-   <summary><strong>Path 1: Local Supabase (Docker)</strong></summary>
-
-   Requires Docker Desktop installed and running.
-
-   ```bash
-   npx supabase start
-   npx supabase migration up
-   ```
-
-   The output of `npx supabase start` will display the Supabase URL and API keys needed for your `.env.local`.
-
-   </details>
-
-   <details>
-   <summary><strong>Path 2: Remote Supabase (Cloud)</strong></summary>
-
-   Requires a [Supabase](https://supabase.com/) account and project.
-
-   ```bash
-   npx supabase link --project-ref <your-project-ref>
-   npx supabase db push
-   ```
-
-   Retrieve your project URL and API keys from the Supabase dashboard under **Settings → API**.
-
-   </details>
-
-4. Start the development server:
-
+4. **Start the Development Server:**
    ```bash
    npm run dev
    ```
+   Open [http://localhost:3000](http://localhost:3000) in your browser to interact with the application.
 
-   The app will be available at `http://localhost:3000`.
+---
 
-## How It Works
+## 🔒 Authentication Flow (SIWE Architecture)
 
-- Built with [Next.js](https://nextjs.org/) App Router and [Supabase](https://supabase.com/)
-- Uses [Circle Modular Wallets](https://developers.circle.com/wallets/modular) for managing transactions with Passkey security
-- Uses [Arc Network](https://arc.network/) for fast and low-cost transactions
-- Real-time UI updates powered by Supabase Realtime subscriptions
-- Styled with [Tailwind CSS](https://tailwindcss.com) and components from [shadcn/ui](https://ui.shadcn.com/)
+To secure database queries and enforce Row-Level Security (RLS) without requiring cumbersome email/password sign-ups, ArcPay utilizes an optimized SIWE bridge:
 
-## Environment Variables
+```mermaid
+sequenceDiagram
+    actor User as User Wallet
+    participant FE as Frontend (Next.js)
+    participant BE as SIWE Endpoint (/api/auth/wallet-login)
+    participant SB as Supabase Auth
 
-Copy `.env.example` to `.env.local` and fill in the required values:
-
-```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project-url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
-# Circle
-CIRCLE_API_KEY=your-circle-api-key
-CIRCLE_ENTITY_SECRET=your-circle-entity-secret
-NEXT_PUBLIC_CIRCLE_CLIENT_KEY=your-circle-client-key
-NEXT_PUBLIC_CIRCLE_CLIENT_URL=https://modular-sdk.circle.com/v1/rpc/w3s/buidl
+    User->>FE: Click "Connect Wallet"
+    FE->>User: Select Wallet (MetaMask, Rainbow, etc.)
+    User-->>FE: Connect Address & Chain ID
+    FE->>User: Request Signature (SIWE Message)
+    User-->>FE: Provide signed message hash
+    FE->>BE: POST { message, signature }
+    BE->>BE: Verify SIWE signature via viem/siwe
+    BE->>SB: Authenticate/Register deterministic email: wallet_[address]@arcpay.eth
+    SB-->>BE: Return JWT Session
+    BE-->>FE: Send success response with user payload
+    FE->>FE: Save Supabase session cookie
+    FE->>FE: Redirect to /dashboard
 ```
 
-| Variable | Scope | Purpose |
-| --- | --- | --- |
-| `NEXT_PUBLIC_SUPABASE_URL` | Public | Supabase project URL. |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Public | Supabase anonymous key. |
-| `CIRCLE_API_KEY` | Server-side | Circle API key for wallet operations. |
-| `CIRCLE_ENTITY_SECRET` | Server-side | Circle entity secret for signing transactions. |
-| `NEXT_PUBLIC_CIRCLE_CLIENT_KEY` | Public | Circle client key for modular wallets. |
-| `NEXT_PUBLIC_CIRCLE_CLIENT_URL` | Public | Circle modular wallet SDK RPC URL. |
+---
 
-## User Accounts
+## 📖 Available Documentation
 
-### Test Accounts (Local Supabase)
+For a comprehensive guide on building, deploying, testing, and integrating with the ArcPay SDK, refer to our interactive **Docs Page** built directly into the app:
+- Access locally at `/docs` (or via the UI navigation sidebar).
+- Read the API and smart contract interfaces.
 
-If you are running Supabase locally, you can use the following pre-defined phone numbers and OTPs for testing (configured in `supabase/config.toml`):
+---
 
-| Phone Number | OTP |
-| --- | --- |
-| `+14152127777` | `123456` |
-| `+14152128888` | `654321` |
+## 📄 License & Attributions
 
-### Default Account
-
-On first visit, you can also sign up with any email and password, then set up your passkey.
-
-## Security & Usage Model
-
-This sample application:
-- Assumes testnet usage only
-- Handles secrets via environment variables
-- Is not intended for production use without modification
+Developed by **linoxbt**. Powered by **Circle Developer Platform** and **Arc Network**.
+Distributed under the Apache-2.0 License.
