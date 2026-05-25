@@ -24,6 +24,7 @@ import "./globals.css";
 import { Web3Provider } from "@/components/web3-provider";
 import { BalanceProvider } from "@/contexts/balanceContext";
 import { Providers } from "@/components/rainbow-provider";
+import { Analytics } from '@vercel/analytics/next';
 
 const defaultUrl = process.env.NEXT_PUBLIC_VERCEL_URL
   ? process.env.NEXT_PUBLIC_VERCEL_URL
@@ -69,6 +70,7 @@ export default async function RootLayout({
             </BalanceProvider>
           </Web3Provider>
         </Providers>
+        <Analytics />
       </body>
     </html>
   );
